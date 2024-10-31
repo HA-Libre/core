@@ -244,7 +244,7 @@ aioguardian==2022.07.0
 aioharmony==0.2.10
 
 # homeassistant.components.hassio
-aiohasupervisor==0.2.0
+aiohasupervisor==0.2.1
 
 # homeassistant.components.homekit_controller
 aiohomekit==3.2.5
@@ -396,7 +396,7 @@ aiowatttime==0.1.1
 aiowebostv==0.4.2
 
 # homeassistant.components.withings
-aiowithings==3.1.0
+aiowithings==3.1.1
 
 # homeassistant.components.yandex_transport
 aioymaps==1.2.5
@@ -950,7 +950,7 @@ hole==0.8.0
 holidays==0.59
 
 # homeassistant.components.frontend
-home-assistant-frontend==20241030.0
+home-assistant-frontend==20241031.0
 
 # homeassistant.components.conversation
 home-assistant-intents==2024.10.30
@@ -1175,7 +1175,7 @@ mozart-api==4.1.1.116.0
 mullvad-api==1.0.0
 
 # homeassistant.components.music_assistant
-music-assistant-client==1.0.3
+music-assistant-client==1.0.5
 
 # homeassistant.components.tts
 mutagen==1.47.0
@@ -2041,7 +2041,7 @@ renault-api==0.2.7
 renson-endura-delta==1.7.1
 
 # homeassistant.components.reolink
-reolink-aio==0.10.1
+reolink-aio==0.10.2
 
 # homeassistant.components.rflink
 rflink==0.0.66
@@ -2301,7 +2301,7 @@ typedmonarchmoney==0.3.1
 uasiren==0.0.1
 
 # homeassistant.components.unifiprotect
-uiprotect==6.3.1
+uiprotect==6.3.2
 
 # homeassistant.components.landisgyr_heat_meter
 ultraheat-api==0.5.7
@@ -2310,7 +2310,7 @@ ultraheat-api==0.5.7
 unifi-discovery==1.2.0
 
 # homeassistant.components.zha
-universal-silabs-flasher==0.0.23
+universal-silabs-flasher==0.0.24
 
 # homeassistant.components.upb
 upb-lib==0.5.8
@@ -2452,7 +2452,7 @@ zeroconf==0.136.0
 zeversolar==0.3.2
 
 # homeassistant.components.zha
-zha==0.0.36
+zha==0.0.37
 
 # homeassistant.components.zwave_js
 zwave-js-server-python==0.58.1
