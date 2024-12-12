@@ -389,7 +389,6 @@ INTEGRATIONS_WITHOUT_QUALITY_SCALE_FILE = [
     "fints",
     "fireservicerota",
     "firmata",
-    "fitbit",
     "fivem",
     "fixer",
     "fjaraskupan",
@@ -482,7 +481,6 @@ INTEGRATIONS_WITHOUT_QUALITY_SCALE_FILE = [
     "hddtemp",
     "hdmi_cec",
     "heatmiser",
-    "heos",
     "here_travel_time",
     "hikvision",
     "hikvisioncam",
@@ -700,7 +698,6 @@ INTEGRATIONS_WITHOUT_QUALITY_SCALE_FILE = [
     "mysensors",
     "mystrom",
     "mythicbeastsdns",
-    "myuplink",
     "nad",
     "nam",
     "namecheapdns",
@@ -709,7 +706,6 @@ INTEGRATIONS_WITHOUT_QUALITY_SCALE_FILE = [
     "neato",
     "nederlandse_spoorwegen",
     "ness_alarm",
-    "nest",
     "netatmo",
     "netdata",
     "netgear",
@@ -734,7 +730,6 @@ INTEGRATIONS_WITHOUT_QUALITY_SCALE_FILE = [
     "no_ip",
     "noaa_tides",
     "nobo_hub",
-    "nordpool",
     "norway_air",
     "notify_events",
     "notion",
@@ -893,7 +888,6 @@ INTEGRATIONS_WITHOUT_QUALITY_SCALE_FILE = [
     "rtorrent",
     "rtsp_to_webrtc",
     "ruckus_unleashed",
-    "russound_rio",
     "russound_rnet",
     "ruuvi_gateway",
     "ruuvitag_ble",
@@ -1108,7 +1102,6 @@ INTEGRATIONS_WITHOUT_QUALITY_SCALE_FILE = [
     "v2c",
     "vallox",
     "vasttrafik",
-    "velbus",
     "velux",
     "venstar",
     "vera",
@@ -1349,16 +1342,19 @@ def validate_iqs_file(config: Config, integration: Integration) -> None:
             "quality_scale", f"Invalid {name}: {humanize_error(data, err)}"
         )
 
+    rules_done = set[str]()
     rules_met = set[str]()
     for rule_name, rule_value in data.get("rules", {}).items():
         status = rule_value["status"] if isinstance(rule_value, dict) else rule_value
         if status not in {"done", "exempt"}:
             continue
         rules_met.add(rule_name)
-        if (
-            status == "done"
-            and (validator := VALIDATORS.get(rule_name))
-            and (errors := validator.validate(integration))
+        if status == "done":
+            rules_done.add(rule_name)
+
+    for rule_name in rules_done:
+        if (validator := VALIDATORS.get(rule_name)) and (
+            errors := validator.validate(config, integration, rules_done=rules_done)
         ):
             for error in errors:
                 integration.add_error("quality_scale", f"[{rule_name}] {error}")
