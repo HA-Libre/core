@@ -992,6 +992,18 @@ async def test_config_update(
             "create_backup": {"agent_ids": ["test-agent"]},
             "schedule": "someday",
         },
+        {
+            "type": "backup/config/update",
+            "create_backup": {"agent_ids": ["test-agent", "test-agent"]},
+        },
+        {
+            "type": "backup/config/update",
+            "create_backup": {"include_addons": ["my-addon", "my-addon"]},
+        },
+        {
+            "type": "backup/config/update",
+            "create_backup": {"include_folders": ["media", "media"]},
+        },
     ],
 )
 async def test_config_update_errors(
@@ -1306,6 +1318,35 @@ async def test_config_schedule_logic(
                 "backup-4": MagicMock(
                     date="2024-11-12T04:45:00+01:00",
                     with_automatic_settings=False,
+                    spec=ManagerBackup,
+                ),
+            },
+            {},
+            {},
+            "2024-11-11T04:45:00+01:00",
+            "2024-11-12T04:45:00+01:00",
+            "2024-11-12T04:45:00+01:00",
+            1,
+            1,
+            0,
+            [],
+        ),
+        (
+            {
+                "type": "backup/config/update",
+                "create_backup": {"agent_ids": ["test.test-agent"]},
+                "retention": {"copies": 3, "days": None},
+                "schedule": "daily",
+            },
+            {
+                "backup-1": MagicMock(
+                    date="2024-11-10T04:45:00+01:00",
+                    with_automatic_settings=True,
+                    spec=ManagerBackup,
+                ),
+                "backup-2": MagicMock(
+                    date="2024-11-11T04:45:00+01:00",
+                    with_automatic_settings=True,
                     spec=ManagerBackup,
                 ),
             },
