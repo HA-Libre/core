@@ -2574,7 +2574,7 @@
   dict({
     'id': 2,
     'result': dict({
-      'backup_job_id': '27f5c632',
+      'backup_job_id': 'fceef4e6',
     }),
     'success': True,
     'type': 'result',
@@ -2645,7 +2645,7 @@
   dict({
     'id': 2,
     'result': dict({
-      'backup_job_id': '27f5c632',
+      'backup_job_id': 'fceef4e6',
     }),
     'success': True,
     'type': 'result',
@@ -2716,7 +2716,7 @@
   dict({
     'id': 2,
     'result': dict({
-      'backup_job_id': '27f5c632',
+      'backup_job_id': 'fceef4e6',
     }),
     'success': True,
     'type': 'result',
@@ -3049,6 +3049,17 @@
 # ---
 # name: test_restore_remote_agent[remote_agents1-backups1].1
   1
+# ---
+# name: test_restore_wrong_password
+  dict({
+    'error': dict({
+      'code': 'password_incorrect',
+      'message': 'Incorrect password',
+    }),
+    'id': 1,
+    'success': False,
+    'type': 'result',
+  })
 # ---
 # name: test_subscribe_event
   dict({
