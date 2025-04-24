@@ -35,17 +35,18 @@ from homeassistant.components.intent import (
     async_register_timer_handler,
 )
 from homeassistant.components.media_player import async_process_play_media_url
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .const import DOMAIN
-from .entity import EsphomeAssistEntity
+from .entity import EsphomeAssistEntity, convert_api_error_ha_error
 from .entry_data import ESPHomeConfigEntry, RuntimeEntryData
 from .enum_mapper import EsphomeEnumMapper
 from .ffmpeg_proxy import async_create_proxy_url
+
+PARALLEL_UPDATES = 0
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -109,7 +110,7 @@ class EsphomeAssistSatellite(
 
     def __init__(
         self,
-        config_entry: ConfigEntry,
+        config_entry: ESPHomeConfigEntry,
         entry_data: RuntimeEntryData,
     ) -> None:
         """Initialize satellite."""
@@ -310,12 +311,13 @@ class EsphomeAssistSatellite(
                         self.entry_data.api_version
                     )
                 )
-                if feature_flags & VoiceAssistantFeature.SPEAKER:
-                    media_id = tts_output["media_id"]
+                if feature_flags & VoiceAssistantFeature.SPEAKER and (
+                    stream := tts.async_get_stream(self.hass, tts_output["token"])
+                ):
                     self._tts_streaming_task = (
                         self.config_entry.async_create_background_task(
                             self.hass,
-                            self._stream_tts_audio(media_id),
+                            self._stream_tts_audio(stream),
                             "esphome_voice_assistant_tts",
                         )
                     )
@@ -333,6 +335,12 @@ class EsphomeAssistSatellite(
                 "code": event.data["code"],
                 "message": event.data["message"],
             }
+        elif event_type == VoiceAssistantEventType.VOICE_ASSISTANT_RUN_START:
+            assert event.data is not None
+            if tts_output := event.data["tts_output"]:
+                path = tts_output["url"]
+                url = async_process_play_media_url(self.hass, path)
+                data_to_send = {"url": url}
         elif event_type == VoiceAssistantEventType.VOICE_ASSISTANT_RUN_END:
             if self._tts_streaming_task is None:
                 # No TTS
@@ -340,6 +348,7 @@ class EsphomeAssistSatellite(
 
         self.cli.send_voice_assistant_event(event_type, data_to_send)
 
+    @convert_api_error_ha_error
     async def async_announce(
         self, announcement: assist_satellite.AssistSatelliteAnnouncement
     ) -> None:
@@ -349,6 +358,7 @@ class EsphomeAssistSatellite(
         """
         await self._do_announce(announcement, run_pipeline_after=False)
 
+    @convert_api_error_ha_error
     async def async_start_conversation(
         self, start_announcement: assist_satellite.AssistSatelliteAnnouncement
     ) -> None:
@@ -564,7 +574,7 @@ class EsphomeAssistSatellite(
 
     async def _stream_tts_audio(
         self,
-        media_id: str,
+        tts_result: tts.ResultStream,
         sample_rate: int = 16000,
         sample_width: int = 2,
         sample_channels: int = 1,
@@ -579,14 +589,13 @@ class EsphomeAssistSatellite(
             if not self._is_running:
                 return
 
-            extension, data = await tts.async_get_media_source_audio(
-                self.hass,
-                media_id,
-            )
-
-            if extension != "wav":
-                _LOGGER.error("Only WAV audio can be streamed, got %s", extension)
+            if tts_result.extension != "wav":
+                _LOGGER.error(
+                    "Only WAV audio can be streamed, got %s", tts_result.extension
+                )
                 return
+
+            data = b"".join([chunk async for chunk in tts_result.async_stream_result()])
 
             with io.BytesIO(data) as wav_io, wave.open(wav_io, "rb") as wav_file:
                 if (
